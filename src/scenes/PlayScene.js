@@ -71,12 +71,12 @@ export default class PlayScene extends Phaser.Scene {
       frameHeight: 105,
     });
     this.load.spritesheet("snake_2", "assets/spritesheets/snakes/snake_2.png", {
-      frameWidth: 85,
-      frameHeight: 85,
+      frameWidth: 150,
+      frameHeight: 160,
     });
     this.load.spritesheet("snake_3", "assets/spritesheets/snakes/snake_3.png", {
-      frameWidth: 85,
-      frameHeight: 85,
+      frameWidth: 100,
+      frameHeight: 205,
     });
     this.load.spritesheet("snake_4", "assets/spritesheets/snakes/snake_4.png", {
       frameWidth: 85,
@@ -115,7 +115,7 @@ export default class PlayScene extends Phaser.Scene {
     //x tăng = 55
     //y tăng = 55
     this.player1 = new Player(this, 100, 550);
-    this.snake1 = new Snake(this, 1, 460, 495);
+    this.snake1 = new Snake(this, 3, 405, 150);
     //tọa độ +- 25
     this.setRandomPosition()
   }
@@ -191,7 +191,7 @@ export default class PlayScene extends Phaser.Scene {
         // Chọn một ô ngẫu nhiên trên bàn
         let cellIndex = Phaser.Math.Between(1, cells.length - 1);
         let cell = cells[cellIndex];
-        // console.log("cellIndex", cellIndex);
+        console.log('cell', cell);
 
         // Kiểm tra xem thang có thể nằm trong ô này không
         if (cell.used) continue; // Nếu ô này đã được sử dụng, chọn ô khác
@@ -221,14 +221,12 @@ export default class PlayScene extends Phaser.Scene {
 
         // Kiểm tra xem thang có chồng lên thang khác không
         for (let j = 0; j < ladderRects.length; j++) {
-          console.log('j', j);
           let rect = ladderRects[j];
-          console.log('rect', rect);
-          console.log('newRect', newRect);
 
           if (Phaser.Geom.Intersects.RectangleToRectangle(rect, newRect)) {
             ifIntersect = true;
             console.log(`intersect`);
+            break;
           }
         }
 
@@ -240,15 +238,11 @@ export default class PlayScene extends Phaser.Scene {
           valid = true;
         }
 
-        console.log('valid', valid, 'validPosition', validPosition);
-
         // Nếu tất cả các ô đều có tình trạng là 0, thì vị trí của thang là hợp lệ
         if (valid) {
           ladderX = cell.x;
           ladderY = cell.y;
           cell.ladder = { x: ladderX, y: ladderY, toX: topX, toY: topY };
-          console.log("cell", cell.number);
-          console.log('ladderX', cell.x, 'ladderY', cell.y);
           validPosition = true;
           cell.used = true;
 
