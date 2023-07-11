@@ -12,6 +12,14 @@ export var gameSettings = {
         { width: 2, height: 2, incX: -1, incY: 1 },
         { width: 4, height: 2, incX: -3, incY: 1 },
     ],
+    snakesDirections: [
+        {width: 3, height: 2, incX: 1, incY: 1},
+        {width: 3, height: 3, incX: -1, incY: 2},
+        {width: 2, height: 4, incX: 1, incY: 3},
+        {width: 4, height: 1, incX: 3, incY: 0},
+        {width: 2, height: 6, incX: 0, incY: 5},
+        {width: 4, height: 2, incX: -3, incY: 1},
+    ],
     cells: [
         { x: 100, y: 550, number: 0 },
         { x: 185, y: 550, number: 1, ladder: {}, snake: {}, used: false },

@@ -79,16 +79,16 @@ export default class PlayScene extends Phaser.Scene {
       frameHeight: 205,
     });
     this.load.spritesheet("snake_4", "assets/spritesheets/snakes/snake_4.png", {
-      frameWidth: 85,
-      frameHeight: 85,
+      frameWidth: 185,
+      frameHeight: 80,
     });
     this.load.spritesheet("snake_5", "assets/spritesheets/snakes/snake_5.png", {
-      frameWidth: 85,
-      frameHeight: 85,
+      frameWidth: 100,
+      frameHeight: 305,
     });
     this.load.spritesheet("snake_6", "assets/spritesheets/snakes/snake_6.png", {
-      frameWidth: 85,
-      frameHeight: 85,
+      frameWidth: 150,
+      frameHeight: 95,
     });
     this.load.spritesheet("snake_7", "assets/spritesheets/snakes/snake_7.png", {
       frameWidth: 85,
@@ -103,7 +103,7 @@ export default class PlayScene extends Phaser.Scene {
       frameHeight: 85,
     });
     this.load.spritesheet("snake_10", "assets/spritesheets/snakes/snake_10.png", {
-      frameWidth: 85,
+      frameWidth: 100,
       frameHeight: 85,
     });
   }
@@ -115,9 +115,9 @@ export default class PlayScene extends Phaser.Scene {
     //x tăng = 55
     //y tăng = 55
     this.player1 = new Player(this, 100, 550);
-    this.snake1 = new Snake(this, 3, 405, 150);
     //tọa độ +- 25
-    this.setRandomPosition()
+    // this.placeLadders()
+    this.placeSnakes();
   }
 
 
@@ -165,17 +165,9 @@ export default class PlayScene extends Phaser.Scene {
     }
   }
 
-  //place ladders at random position
   placeLadders() {
-    for (var i = 0; i < gameSettings.laddersDirections.length; i++) {
-      this.setRandomPosition();
-    }
-  }
-  setRandomPosition() {
     var cells = gameSettings.cells;
     var cellSize = 55;
-    var numRows = 10;
-    var numCols = 10;
     var laddersDirections = gameSettings.laddersDirections;
     var ladderRects = []
 
@@ -191,18 +183,16 @@ export default class PlayScene extends Phaser.Scene {
         // Chọn một ô ngẫu nhiên trên bàn
         let cellIndex = Phaser.Math.Between(1, cells.length - 1);
         let cell = cells[cellIndex];
-        console.log('cell', cell);
+        console.log('cell', cell.ladder.length);
 
         // Kiểm tra xem thang có thể nằm trong ô này không
         if (cell.used) continue; // Nếu ô này đã được sử dụng, chọn ô khác
+        if (cell.ladder.length) continue;
 
-        if (ladder.incX > 0) {
+        if (ladder.incX !== 0) {
           var topX = cell.x + ladder.incX * cellSize;
           var topY = cell.y - ladder.incY * cellSize;
-        } else if (ladder.incX < 0) {
-          var topX = cell.x + ladder.incX * cellSize;
-          var topY = cell.y - ladder.incY * cellSize;
-        } else if (ladder.incX == 0) {
+        } else if (ladder.incX === 0) {
           var topX = cell.x;
           var topY = cell.y - ladder.incY * cellSize;
         }
@@ -231,6 +221,7 @@ export default class PlayScene extends Phaser.Scene {
         }
 
         if (ifIntersect === true) {
+          newRect = null
           validPosition = false;
           valid = false;
         } else {
@@ -260,8 +251,72 @@ export default class PlayScene extends Phaser.Scene {
           }
 
           var ladderBound = newLadder.getBounds();
-          var ladderRect = new Phaser.Geom.Rectangle(ladderBound.x, ladderBound.y, ladderBound.width + 20, ladderBound.height + 20);
+          var ladderRect = new Phaser.Geom.Rectangle(ladderBound.x, ladderBound.y, ladderBound.width + 30, ladderBound.height + 30);
           ladderRects.push(ladderRect);
+        }
+      }
+    }
+  }
+
+  placeSnakes() {
+    var cells = gameSettings.cells;
+    var cellSize = 55;
+    var snakesDirections = gameSettings.snakesDirections;
+
+    for (let i = 0; i < snakesDirections.length; i++) {
+      let snake = snakesDirections[i];
+      let snakeX, snakeY;
+      let validPosition = false;
+
+      while (!validPosition) {
+        let valid = false;
+        let ifIntersect = false;
+        // Chọn một ô ngẫu nhiên trên bàn
+        let cellIndex = Phaser.Math.Between(1, cells.length - 1);
+        let cell = cells[cellIndex];
+        console.log('cell', cell);
+
+        // Kiểm tra xem thang có thể nằm trong ô này không
+        if (cell.used) continue;
+        if (cell.ladder.length) continue;
+
+        if (i < 5) {
+          var toX = cell.x + (snake.width - 1) * cellSize;
+          var toY = cell.y + snake.incY * cellSize;
+        } else {
+          var toX = cell.x - (snake.width - 1) * cellSize;
+          var toY = cell.y + snake.incY * cellSize;
+        }
+        if (toX >= 625 || toX <= 295 || toY <= 110 || toY >= 495) continue;
+
+        valid = true;
+        if (valid) {
+          console.log('valid');
+          snakeX = cell.x;
+          snakeY = cell.y;
+          cell.snake = { x: snakeX, y: snakeY, toX: toX, toY: toY };
+          validPosition = true;
+          cell.used = true;
+          if (i < 1) {
+            var newSnake = new Snake(this, i + 1, cell.x - 75, cell.y);
+            cells[cellIndex - 12].used = true;
+          } else if (i == 1) {
+            var newSnake = new Snake(this, i + 1, cell.x - 75, cell.y);
+            if (Math.floor(cellIndex / 10) % 2 === 0) {
+              cells[cellIndex - 21].used = true;
+            } else {
+              cells[cellIndex - 19].used = true;
+            }
+          } else if (i == 2) {
+            var newSnake = new Snake(this, i + 1, cell.x - 10, cell.y);
+          } else if (i == 3) {
+            var newSnake = new Snake(this, i + 1, cell.x - 10, cell.y - 30);
+          } else if (i == 4) {
+            var newSnake = new Snake(this, i + 1, cell.x - 25, cell.y - 5);
+          }
+          else {
+            var newSnake = new Snake(this, i + 1, cell.x - 15, cell.y);
+          }
         }
       }
     }

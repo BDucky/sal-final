@@ -16,8 +16,11 @@ export default class Snake extends Phaser.Physics.Arcade.Sprite {
             repeat: -1,
         });
 
-
-        this.setOrigin(0.5, 0);
+        if (number < 5) {
+            this.setOrigin(0, 0);
+        } else {
+            this.setOrigin(1, 0);   
+        }
         this.number = number;
     }
 
