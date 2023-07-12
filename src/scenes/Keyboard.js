@@ -1,12 +1,13 @@
 import Phaser from "phaser";
 import KeyboardItem from "../game-object/KeyboardItem";
 import WebFontFile from "../game-object/WebFontFile";
+import { Client } from "colyseus.js"
 // import config from "../config";
 
 // const {width, height} = config
 
-const width = 1360;
-const height = 640;
+const width = 900;
+const height = 650;
 
 const values = [7, 8, 9, 4, 5, 6, 1, 2, 3, "×", 0, "✓"];
 
@@ -16,18 +17,28 @@ const CELL_PADDING = 6;
 export default class Keyboard extends Phaser.Scene {
   constructor() {
     super("keyboard");
+    this.host = 'wss://fresher.woay.io';
+    this.client = new Client(this.host);
   }
 
   preload() {
-    this.load.image("bg_game0", "assets/bg_game0.jpg");
-    this.load.image("bg_help", "assets/bg_help.png");
-    this.load.image("exit", "assets/but_no.png");
+    this.load.image("bg_game0", "assets/images/bg_game0.jpg");
+    this.load.image("bg_help", "assets//images/bg_help.png");
+    this.load.image("exit", "assets/images/but_no.png");
 
     //File này mọi người tự import vào nhé
     this.load.addFile(new WebFontFile(this.load, "Permanent Marker"));
   }
 
   create() {
+    this.client.joinOrCreate("lobby").then(room => {
+      room.send("findRoom", '<4-digit-code>');
+      // listen to patches coming from the server
+      room.onMessage("roomId", function (roomId) {
+        this.client.joinById(roomId, this.roomId)
+      });
+    });
+
     this.keyboards = [];
     this.roomId = "";
 
@@ -81,7 +92,7 @@ export default class Keyboard extends Phaser.Scene {
 
   createRoomLabel() {
     this.roomLabel = this.add
-      .text(this.msgBox.x - 100, this.msgBox.y, this.roomId || "000000", {
+      .text(this.msgBox.x - 100, this.msgBox.y, this.roomId || "0000", {
         fontFamily: "Permanent Marker",
         fontSize: "40px",
         color: "#ffffff",
@@ -133,7 +144,7 @@ export default class Keyboard extends Phaser.Scene {
       this.msgBox.x + this.msgBox.width / 2 - 70,
       this.msgBox.y - this.msgBox.height / 2 + 70,
       "exit"
-    ).setScale(0.5).setInteractive({useHandCursor:true})
+    ).setScale(0.5).setInteractive({ useHandCursor: true }).on('pointerdown', () => this.scene.start("start-game"))
 
     this.titleText = this.add
       .text(

@@ -26,8 +26,8 @@ export default class PlayScene extends Phaser.Scene {
       frameHeight: 68,
     });
     this.load.spritesheet("but-dice", "assets/spritesheets/but_dice.png", {
-      frameWidth: 85,
-      frameHeight: 85,
+      frameWidth: 84,
+      frameHeight: 87,
     });
     this.load.spritesheet(
       "but-settings",
@@ -62,28 +62,28 @@ export default class PlayScene extends Phaser.Scene {
     this.load.image("ladder7", "assets/images/ladders/ladder_7.png");
 
     this.load.spritesheet("snake_1", "assets/spritesheets/snakes/snake_1.png", {
-      frameWidth: 160,
-      frameHeight: 105,
+      frameWidth: 150,
+      frameHeight: 100,
     });
     this.load.spritesheet("snake_2", "assets/spritesheets/snakes/snake_2.png", {
       frameWidth: 150,
-      frameHeight: 160,
+      frameHeight: 150,
     });
     this.load.spritesheet("snake_3", "assets/spritesheets/snakes/snake_3.png", {
-      frameWidth: 100,
-      frameHeight: 205,
+      frameWidth: 120,
+      frameHeight: 200,
     });
     this.load.spritesheet("snake_4", "assets/spritesheets/snakes/snake_4.png", {
-      frameWidth: 185,
-      frameHeight: 80,
+      frameWidth: 190,
+      frameHeight: 72,
     });
     this.load.spritesheet("snake_5", "assets/spritesheets/snakes/snake_5.png", {
-      frameWidth: 100,
-      frameHeight: 305,
+      frameWidth: 96,
+      frameHeight: 310,
     });
     this.load.spritesheet("snake_6", "assets/spritesheets/snakes/snake_6.png", {
-      frameWidth: 150,
-      frameHeight: 95,
+      frameWidth: 170,
+      frameHeight: 90,
     });
   }
 
@@ -91,42 +91,43 @@ export default class PlayScene extends Phaser.Scene {
     this.background = this.add
       .tileSprite(-250, 0, 1150, 1000, "background")
       .setOrigin(0, 0);
-    var settings = this.add.sprite(850, 50, "but-settings", 0).setInteractive();
+    var settings = this.add.sprite(850, 50, "but-settings", 0).setInteractive({
+      cursor: "pointer",
+    });
 
-    this.diceBtn = this.add.sprite(800, 550, "but-dice", 0).setInteractive();
+    this.diceBtn = this.add.sprite(800, 550, "but-dice", 0);
     this.diceBtn.on("pointerdown", this.handleClickBtnDice, this);
     this.diceBtn.setInteractive({
       cursor: "pointer",
     });
 
+    var randomSnakes = [
+      { id: 1, cell: 75 },
+      { id: 2, cell: 45 },
+      { id: 3, cell: 59 },
+      { id: 4, cell: 62 },
+      { id: 5, cell: 88 },
+      { id: 6, cell: 14 },
+    ]
+    var randomLadders = [{ id: 6, cell: 27 }, { id: 1, cell: 3 }]
+
     // var dice = new Dice(this, 800, 550);
     //x tăng = 55
     //y tăng = 55
     //tọa độ +- 25
-    while (this.placeLadders()) {}
-    this.placeSnakes();
+    for (let i = 0; i < randomLadders.length; i++) {
+      let ladder = randomLadders[i];
+      this.addLadders(ladder.cell, ladder.id);
+    }
+    for (let i = 0; i < randomSnakes.length; i++) {
+      let snake = randomSnakes[i];
+      this.addSnakes(snake.cell, snake.id);
+    }
     this.player2 = new Player2(this, 100, 525);
     this.player1 = new Player1(this, 100, 550);
   }
 
-  update() {}
-
-  // movePlayer() {
-  //   var number = gameSettings.currentP1Cell.number;
-  //   gameSettings.currentP1Cell.number += 1;
-  //   this.player1.x = gameSettings.cells[number + 1].x;
-  //   this.player1.y = gameSettings.cells[number + 1].y;
-
-  //   if (Math.floor(number / 10) % 2 === 0) {
-  //     this.player1.moveRight();
-  //   } else {
-  //     this.player1.moveLeft();
-  //   }
-
-  //   if (gameSettings.currentP1Cell.number === 100) {
-  //     console.log("win");
-  //   }
-  // }
+  update() { }
 
   movePlayer(value) {
     var currentCell = gameSettings.currentP1Cell;
@@ -157,8 +158,9 @@ export default class PlayScene extends Phaser.Scene {
             }, 200);
           }
           if (nextCell.snake.x != null) {
+            console.log("meetSnake",);
             setTimeout(() => {
-              this.meetSnake();
+              this.meetSnake(nextCell.snake.number);
             }, 200);
           }
         }
@@ -193,7 +195,6 @@ export default class PlayScene extends Phaser.Scene {
             tempCell.x == currentCell.ladder.toX &&
             tempCell.y == currentCell.ladder.toY
           ) {
-            console.log("tempCell", tempCell);
             gameSettings.currentP1Cell = tempCell;
           }
         }
@@ -202,223 +203,135 @@ export default class PlayScene extends Phaser.Scene {
     });
   }
 
-  meetSnake() {
+  meetSnake(id) {
     this.player1.destroy();
     console.log(gameSettings.currentP1Cell);
-  }
-
-  placeLadders() {
-    var cells = gameSettings.cells;
-    var cellSize = 55;
-    var laddersDirections = gameSettings.laddersDirections;
-    var ladderRects = [];
-    var counter = 0;
-
-    for (let i = 0; i < laddersDirections.length; i++) {
-      let ladder = laddersDirections[i];
-      let ladderX, ladderY;
-      let validPosition = false;
-
-      // Tìm vị trí hợp lệ cho thang
-      while (!validPosition) {
-        let valid = false;
-        let ifIntersect = false;
-        // Chọn một ô ngẫu nhiên trên bàn
-        let cellIndex = Phaser.Math.Between(1, cells.length - 1);
-        let cell = cells[cellIndex];
-        console.log("cell", cell.ladder.length);
-        counter++;
-        if (counter > 50) {
-          return false;
-        }
-        // Kiểm tra xem thang có thể nằm trong ô này không
-        if (cell.used) continue; // Nếu ô này đã được sử dụng, chọn ô khác
-        if (cell.ladder.length) continue; //nếu ô này đã có thang thì chọn ô khác
-
-        if (ladder.incX !== 0) {
-          var topX = cell.x + ladder.incX * cellSize;
-          var topY = cell.y - ladder.incY * cellSize;
-        } else if (ladder.incX === 0) {
-          var topX = cell.x;
-          var topY = cell.y - ladder.incY * cellSize;
-        }
-        if (topX >= 680 || topX <= 185 || topY <= 55 || topY >= 550) continue; // Nếu thang vượt quá kích thước của bàn, chọn ô khác
-
-        var rectX = Math.min(cell.x, topX);
-        var rectY = Math.min(cell.y, topY);
-        if (topX - cell.x === 0) {
-          var rectWidth = cellSize + 30;
-          var rectHeight = Math.abs(topY - cell.y);
-        } else {
-          var rectWidth = Math.abs(topX - cell.x);
-          var rectHeight = Math.abs(topY - cell.y);
-        }
-        var newRect = new Phaser.Geom.Rectangle(
-          rectX,
-          rectY,
-          rectWidth,
-          rectHeight
-        );
-
-        // Kiểm tra xem thang có chồng lên thang khác không
-        for (let j = 0; j < ladderRects.length; j++) {
-          let rect = ladderRects[j];
-
-          if (Phaser.Geom.Intersects.RectangleToRectangle(rect, newRect)) {
-            ifIntersect = true;
-            console.log(`intersect`);
-            break;
-          }
-        }
-
-        if (ifIntersect === true) {
-          newRect = null;
-          validPosition = false;
-          valid = false;
-          continue;
-        } else {
-          validPosition = true;
-          valid = true;
-        }
-
-        // Nếu tất cả các ô đều có tình trạng là 0, thì vị trí của thang là hợp lệ
-        if (valid) {
-          ladderX = cell.x;
-          ladderY = cell.y;
-          console.log(ladder);
-          cell.ladder = {
-            x: ladderX,
-            y: ladderY,
-            toX: topX,
-            toY: topY,
-          };
-          validPosition = true;
-          cell.used = true;
-          console.log("cell", cell);
-
-          if (i < 2) {
-            var newLadder = new Ladder(this, i + 1, cell.x - 25, cell.y + 20);
-          } else if (i == 2) {
-            var newLadder = new Ladder(this, i + 1, cell.x - 15, cell.y + 10);
-          } else if (i == 3) {
-            var newLadder = new Ladder(this, i + 1, cell.x - 10, cell.y + 30);
-          } else if (i == 4) {
-            var newLadder = new Ladder(this, i + 1, cell.x - 25, cell.y + 10);
-          } else {
-            var newLadder = new Ladder(this, i + 1, cell.x + 5, cell.y + 30);
-          }
-
-          var ladderBound = newLadder.getBounds();
-          var ladderRect = new Phaser.Geom.Rectangle(
-            ladderBound.x,
-            ladderBound.y,
-            ladderBound.width + 30,
-            ladderBound.height + 30
-          );
-          ladderRects.push(ladderRect);
-        }
-      }
+    if (id === 1) {
+      this.newSnake_1.play(`snake_${id}_eat`, true);
+    } else if (id === 2) {
+      this.newSnake_2.play(`snake_${id}_eat`, true);
+    } else if (id === 3) {
+      this.newSnake_3.play(`snake_${id}_eat`, true);
+    } else if (id === 4) {
+      this.newSnake_4.play(`snake_${id}_eat`, true);
+    } else if (id === 5) {
+      this.newSnake_5.play(`snake_${id}_eat`, true);
+    } else if (id === 6) {
+      this.newSnake_6.play(`snake_${id}_eat`, true);
     }
-    return true;
-  }
-
-  placeSnakes() {
-    var cells = gameSettings.cells;
-    var cellSize = 55;
-    var snakesDirections = gameSettings.snakesDirections;
-
-    for (let i = 0; i < snakesDirections.length; i++) {
-      let snake = snakesDirections[i];
-      let snakeX, snakeY;
-      let validPosition = false;
-
-      while (!validPosition) {
-        let valid = false;
-        let ifIntersect = false;
-        // Chọn một ô ngẫu nhiên trên bàn
-        let cellIndex = Phaser.Math.Between(1, cells.length - 1);
-        let cell = cells[cellIndex];
-        console.log("cell", cell);
-
-        // Kiểm tra xem thang có thể nằm trong ô này không
-        if (cell.used) continue;
-        if (cell.ladder.length) continue;
-
-        if (i === 0) {
-          var toX = cell.x + cellSize;
-          var toY = cell.y + snake.incY * cellSize;
-        } else if (i === 1) {
-          var toX = cell.x + snake.incX * cellSize;
-          var toY = cell.y + snake.incY * cellSize;
-        } else if (i === 2) {
-          var toX = cell.x + snake.incX * cellSize;
-          var toY = cell.y + snake.incY * cellSize;
-        } else if (i === 3) {
-          if (Math.floor(cellIndex / 10) % 2 === 0) continue;
-
-          var toX = cell.x + snake.incX * cellSize;
-          var toY = cell.y + snake.incY * cellSize;
-        } else if (i === 4) {
-          var toX = cell.x;
-          var toY = cell.y + snake.incY * cellSize;
-        } else if (i === 5) {
-          var toX = cell.x + snake.incX * cellSize;
-          var toY = cell.y + snake.incY * cellSize;
-        }
-        if (toX >= 625 || toX <= 295 || toY <= 110 || toY >= 495) continue;
-
-        valid = true;
-        if (valid) {
-          console.log("valid");
-          snakeX = cell.x;
-          snakeY = cell.y;
-          cell.snake = {
-            x: snakeX,
-            y: snakeY,
-            toX: toX,
-            toY: toY,
-            number: i + 1,
-          };
-          validPosition = true;
-          cell.used = true;
-          if (i < 1) {
-            var newSnake = new Snake(this, i + 1, cell.x - 75, cell.y);
-            cells[cellIndex - 12].used = true;
-          } else if (i == 1) {
-            this["snake" + i + 1] = new Snake(this, i + 1, cell.x - 75, cell.y);
-            if (Math.floor(cellIndex / 10) % 2 === 0) {
-              cells[cellIndex - 21].used = true;
-            } else {
-              cells[cellIndex - 19].used = true;
-            }
-          } else if (i == 2) {
-            this["snake" + i + 1] = new Snake(this, i + 1, cell.x - 10, cell.y);
-          } else if (i == 3) {
-            this["snake" + i + 1] = new Snake(
-              this,
-              i + 1,
-              cell.x - 10,
-              cell.y - 30
-            );
-          } else if (i == 4) {
-            this["snake" + i + 1] = new Snake(this, i + 1, cell.x - 10, cell.y);
-          } else {
-            this["snake" + i + 1] = new Snake(this, i + 1, cell.x - 15, cell.y);
-          }
+    setTimeout(() => {
+      for (let i = 0; i < gameSettings.cells.length; i++) {
+        let tempCell = gameSettings.cells[i];
+        if (
+          tempCell.x == gameSettings.currentP1Cell.snake.toX &&
+          tempCell.y == gameSettings.currentP1Cell.snake.toY
+        ) {
+          gameSettings.currentP1Cell = tempCell;
+          this.player1 = new Player1(this, tempCell.x, tempCell.y);
         }
       }
+    }, 1700);
+  }
+
+  addLadders(cellIndex, id) {
+    var cellSize = 55;
+    var cell = gameSettings.cells[cellIndex]
+    var ladder = gameSettings.laddersDirections[id - 1];
+
+    if (ladder.incX !== 0) {
+      var topX = cell.x + ladder.incX * cellSize;
+      var topY = cell.y - ladder.incY * cellSize;
+    } else if (ladder.incX === 0) {
+      var topX = cell.x;
+      var topY = cell.y - ladder.incY * cellSize;
+    }
+
+    cell.ladder = {
+      x: cell.x,
+      y: cell.y,
+      toX: topX,
+      toY: topY,
+    };
+    if (id < 2) {
+      var newLadder = new Ladder(this, id, cell.x - 25, cell.y + 20);
+    } else if (id == 2) {
+      var newLadder = new Ladder(this, id, cell.x - 15, cell.y + 10);
+    } else if (id == 3) {
+      var newLadder = new Ladder(this, id, cell.x - 10, cell.y + 30);
+    } else if (id == 4) {
+      var newLadder = new Ladder(this, id, cell.x - 25, cell.y + 10);
+    } else {
+      var newLadder = new Ladder(this, id, cell.x + 5, cell.y + 30);
+    }
+  }
+
+  addSnakes(cellIndex, id) {
+    var cellSize = 55;
+    var cell = gameSettings.cells[cellIndex]
+    var snake = gameSettings.snakesDirections[id - 1];
+
+    if (id === 1) {
+      var toX = cell.x + cellSize;
+      var toY = cell.y + snake.incY * cellSize;
+    } else if (id === 2) {
+      var toX = cell.x + snake.incX * cellSize;
+      var toY = cell.y + snake.incY * cellSize;
+    } else if (id === 3) {
+      var toX = cell.x + snake.incX * cellSize;
+      var toY = cell.y + snake.incY * cellSize;
+    } else if (id === 4) {
+      var toX = cell.x + snake.incX * cellSize;
+      var toY = cell.y + snake.incY * cellSize;
+    } else if (id === 5) {
+      var toX = cell.x;
+      var toY = cell.y + snake.incY * cellSize;
+    } else if (id === 6) {
+      var toX = cell.x + snake.incX * cellSize;
+      var toY = cell.y + snake.incY * cellSize;
+    }
+
+    cell.snake = {
+      x: cell.x,
+      y: cell.y,
+      toX: toX,
+      toY: toY,
+      number: id,
+    };
+
+    if (id == 1) {
+      this.newSnake_1 = new Snake(this, id, cell.x - 75, cell.y);
+    } else if (id == 2) {
+      this.newSnake_2 = new Snake(this, id, cell.x - 75, cell.y);
+    } else if (id == 3) {
+      this.newSnake_3 = new Snake(this, id, cell.x - 10, cell.y);
+    } else if (id == 4) {
+      this.newSnake_4 = new Snake(
+        this,
+        id,
+        cell.x - 10,
+        cell.y - 30
+      );
+    } else if (id == 5) {
+      this.newSnake_5 = new Snake(this, id, cell.x - 10, cell.y);
+    } else {
+      this.newSnake_6 = new Snake(this, id, cell.x, cell.y);
     }
   }
 
   handleClickBtnDice() {
-    // var value = Phaser.Math.Between(1, 6);
-    var value = 2;
+    var value = Phaser.Math.Between(1, 6);
+    // var value = 5;
+    this.diceBtn.disableInteractive();
     this.diceBtn.setFrame(1);
     this.dice = new Dice(this, 800, 350, value);
     this.dice.launchDice(value);
     this.movePlayer(value);
     setTimeout(() => {
       this.dice.destroy();
-    }, 1500);
+      this.diceBtn.setInteractive({
+        cursor: "pointer",
+      });
+      this.diceBtn.setFrame(0);
+    }, 2000);
   }
 }
