@@ -47,14 +47,10 @@ export default class PlayScene extends Phaser.Scene {
     );
 
     for (let i = 1; i <= 6; i++) {
-      this.load.spritesheet(
-        "dice-" + i,
-        `assets/spritesheets/dice_${i}.png`,
-        {
-          frameWidth: 150,
-          frameHeight: 410,
-        }
-      );
+      this.load.spritesheet("dice-" + i, `assets/spritesheets/dice_${i}.png`, {
+        frameWidth: 150,
+        frameHeight: 410,
+      });
     }
 
     this.load.image("ladder1", "assets/images/ladders/ladder_1.png");
@@ -107,15 +103,13 @@ export default class PlayScene extends Phaser.Scene {
     //x tăng = 55
     //y tăng = 55
     //tọa độ +- 25
-    while (this.placeLadders()) { }
+    while (this.placeLadders()) {}
     this.placeSnakes();
-    // this.ladder = new Ladder(this, 1, 180 - 25, 550 + 20);
     this.player2 = new Player2(this, 100, 525);
     this.player1 = new Player1(this, 100, 550);
   }
 
-  update() {
-  }
+  update() {}
 
   // movePlayer() {
   //   var number = gameSettings.currentP1Cell.number;
@@ -134,76 +128,83 @@ export default class PlayScene extends Phaser.Scene {
   //   }
   // }
 
-  movePlayer() {
-    const currentCell = gameSettings.currentP1Cell;
-    const nextCell = gameSettings.cells[currentCell.number + 1];
-    const direction = (Math.floor(currentCell.number / 10) % 2 === 0) ? 1 : -1;
-    const distance = direction * (nextCell.x - currentCell.x);
+  movePlayer(value) {
+    var currentCell = gameSettings.currentP1Cell;
+    var nextCell = gameSettings.cells[currentCell.number + 1];
+    var direction = Math.floor(currentCell.number / 10) % 2 === 0 ? 1 : -1;
+    var distance = direction * (nextCell.x - currentCell.x);
+    var steps = value;
 
     var tween = this.tweens.add({
       targets: this.player1,
       x: nextCell.x,
       y: nextCell.y,
       duration: 500,
-      ease: "Power1",
+      ease: "Linear",
       onStart: () => {
         this.player1.play("p1_move", true);
-        this.player1.flipX = (direction === -1);
+        this.player1.flipX = direction === -1;
         gameSettings.currentP1Cell = nextCell;
-        console.log("play");
       },
       onComplete: () => {
         this.player1.play("p1_idle");
-        console.log("currentP1Cell", gameSettings.currentP1Cell.ladder);
-        if (gameSettings.currentP1Cell.number === 100) {
-          console.log("win");
+        if (steps > 1) {
+          this.movePlayer(steps - 1);
+        } else {
+          if (nextCell.ladder.x != null) {
+            setTimeout(() => {
+              this.movePlayerOnLadder();
+            }, 200);
+          }
+          if (nextCell.snake.x != null) {
+            setTimeout(() => {
+              this.meetSnake();
+            }, 200);
+          }
         }
-        if (Object.keys(gameSettings.currentP1Cell.ladder).length !== 0) {
-          console.log("ladder", gameSettings.currentP1Cell.ladder);
-          this.movePlayerOnLadder()
-        }
-      }
+      },
     });
   }
 
   movePlayerOnLadder() {
-    const currentCell = gameSettings.currentP1Cell;
-    const nextCell = gameSettings.cells[currentCell.number + 1];
-    const direction = (Math.floor(currentCell.number / 10) % 2 === 0) ? 1 : -1;
-    const ladder = currentCell.ladder
+    var currentCell = gameSettings.currentP1Cell;
+    var nextCell = gameSettings.cells[currentCell.number + 1];
+    var direction = Math.floor(currentCell.number / 10) % 2 === 0 ? 1 : -1;
+    var ladder = currentCell.ladder;
 
-    console.log("moveOnLadder");
+    console.log("moveOnLadder", currentCell);
 
     var tween = this.tweens.add({
       targets: this.player1,
-      x: this.player1.x + ladder.xIncrement,
-      y: this.player1.y + ladder.yIncrement,
+      x: currentCell.ladder.toX,
+      y: currentCell.ladder.toY,
       duration: 500,
       ease: "Power1",
       onStart: () => {
         this.player1.play("p1_move", true);
-        this.player1.flipX = (direction === -1);
-        gameSettings.currentP1Cell = nextCell;
+        this.player1.flipX = direction === -1;
         console.log("play");
       },
       onComplete: () => {
         this.player1.play("p1_idle");
-        console.log("currentP1Cell", gameSettings.currentP1Cell);
-        if (gameSettings.currentP1Cell.number === 100) {
-          console.log("win");
+        for (let i = 0; i < gameSettings.cells.length; i++) {
+          let tempCell = gameSettings.cells[i];
+          if (
+            tempCell.x == currentCell.ladder.toX &&
+            tempCell.y == currentCell.ladder.toY
+          ) {
+            console.log("tempCell", tempCell);
+            gameSettings.currentP1Cell = tempCell;
+          }
         }
-      }
+        console.log("currentP1Cell", gameSettings.currentP1Cell);
+      },
     });
-
   }
 
-  loopMove(steps) {
-    if (steps !== 0) {
-      this.movePlayer();
-      setTimeout(() => {
-        this.loopMove(steps - 1);
-      }, 500);
-    }
+  meetSnake() {
+    this.player1.destroy();
+    console.log(gameSettings.currentP1Cell);
   }
 
   placeLadders() {
@@ -285,7 +286,12 @@ export default class PlayScene extends Phaser.Scene {
           ladderX = cell.x;
           ladderY = cell.y;
           console.log(ladder);
-          cell.ladder = { x: ladderX, y: ladderY, toX: topX, toY: topY, xIncreasement: ladder.angle.xIncrement, yIncreasement: ladder.angle.yIncrement };
+          cell.ladder = {
+            x: ladderX,
+            y: ladderY,
+            toX: topX,
+            toY: topY,
+          };
           validPosition = true;
           cell.used = true;
           console.log("cell", cell);
@@ -338,11 +344,25 @@ export default class PlayScene extends Phaser.Scene {
         if (cell.used) continue;
         if (cell.ladder.length) continue;
 
-        if (i < 5) {
-          var toX = cell.x + (snake.width - 1) * cellSize;
+        if (i === 0) {
+          var toX = cell.x + cellSize;
           var toY = cell.y + snake.incY * cellSize;
-        } else {
-          var toX = cell.x - (snake.width - 1) * cellSize;
+        } else if (i === 1) {
+          var toX = cell.x + snake.incX * cellSize;
+          var toY = cell.y + snake.incY * cellSize;
+        } else if (i === 2) {
+          var toX = cell.x + snake.incX * cellSize;
+          var toY = cell.y + snake.incY * cellSize;
+        } else if (i === 3) {
+          if (Math.floor(cellIndex / 10) % 2 === 0) continue;
+
+          var toX = cell.x + snake.incX * cellSize;
+          var toY = cell.y + snake.incY * cellSize;
+        } else if (i === 4) {
+          var toX = cell.x;
+          var toY = cell.y + snake.incY * cellSize;
+        } else if (i === 5) {
+          var toX = cell.x + snake.incX * cellSize;
           var toY = cell.y + snake.incY * cellSize;
         }
         if (toX >= 625 || toX <= 295 || toY <= 110 || toY >= 495) continue;
@@ -352,27 +372,38 @@ export default class PlayScene extends Phaser.Scene {
           console.log("valid");
           snakeX = cell.x;
           snakeY = cell.y;
-          cell.snake = { x: snakeX, y: snakeY, toX: toX, toY: toY };
+          cell.snake = {
+            x: snakeX,
+            y: snakeY,
+            toX: toX,
+            toY: toY,
+            number: i + 1,
+          };
           validPosition = true;
           cell.used = true;
           if (i < 1) {
             var newSnake = new Snake(this, i + 1, cell.x - 75, cell.y);
             cells[cellIndex - 12].used = true;
           } else if (i == 1) {
-            var newSnake = new Snake(this, i + 1, cell.x - 75, cell.y);
+            this["snake" + i + 1] = new Snake(this, i + 1, cell.x - 75, cell.y);
             if (Math.floor(cellIndex / 10) % 2 === 0) {
               cells[cellIndex - 21].used = true;
             } else {
               cells[cellIndex - 19].used = true;
             }
           } else if (i == 2) {
-            var newSnake = new Snake(this, i + 1, cell.x - 10, cell.y);
+            this["snake" + i + 1] = new Snake(this, i + 1, cell.x - 10, cell.y);
           } else if (i == 3) {
-            var newSnake = new Snake(this, i + 1, cell.x - 10, cell.y - 30);
+            this["snake" + i + 1] = new Snake(
+              this,
+              i + 1,
+              cell.x - 10,
+              cell.y - 30
+            );
           } else if (i == 4) {
-            var newSnake = new Snake(this, i + 1, cell.x - 25, cell.y - 5);
+            this["snake" + i + 1] = new Snake(this, i + 1, cell.x - 10, cell.y);
           } else {
-            var newSnake = new Snake(this, i + 1, cell.x - 15, cell.y);
+            this["snake" + i + 1] = new Snake(this, i + 1, cell.x - 15, cell.y);
           }
         }
       }
@@ -381,11 +412,11 @@ export default class PlayScene extends Phaser.Scene {
 
   handleClickBtnDice() {
     // var value = Phaser.Math.Between(1, 6);
-    var value = 1
+    var value = 2;
     this.diceBtn.setFrame(1);
     this.dice = new Dice(this, 800, 350, value);
     this.dice.launchDice(value);
-    this.loopMove(value);
+    this.movePlayer(value);
     setTimeout(() => {
       this.dice.destroy();
     }, 1500);

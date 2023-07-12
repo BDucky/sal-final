@@ -6,7 +6,7 @@ export var gameSettings = {
   laddersDirections: [
     { width: 3, height: 4, incX: 2, incY: 3, angle: { xIncrement: 0.5547001962252291, yIncrement: -0.8320502943378437 } },
     { width: 2, height: 4, incX: 1, incY: 3, angle: { xIncrement: 0.31622776601683794, yIncrement: -0.9486832980505138 } },
-    { width: 2, height: 3, incX: 1, incY: 1, angle: { xIncrement: 0.447213595499958, yIncrement: -0.894427190999916 } },
+    { width: 2, height: 3, incX: 1, incY: 2, angle: { xIncrement: 0.447213595499958, yIncrement: -0.894427190999916 } },
     { width: 4, height: 2, incX: 3, incY: 1, angle: { xIncrement: 0.9486832980505138, yIncrement: -0.31622776601683794 } },
     { width: 0, height: 3, incX: 0, incY: 2, angle: { xIncrement: 0, yIncrement: -1 } },
     { width: 2, height: 2, incX: -1, incY: 1, angle: { xIncrement: -0.7071067811865475, yIncrement: -0.7071067811865475 } },
