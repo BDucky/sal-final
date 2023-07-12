@@ -106,11 +106,12 @@ export default class PlayScene extends Phaser.Scene {
     // var dice = new Dice(this, 800, 550);
     //x tăng = 55
     //y tăng = 55
-    this.player1 = new Player1(this, 100, 550);
-    this.player2 = new Player2(this, 100, 525);
     //tọa độ +- 25
     while (this.placeLadders()) { }
     this.placeSnakes();
+    // this.ladder = new Ladder(this, 1, 180 - 25, 550 + 20);
+    this.player2 = new Player2(this, 100, 525);
+    this.player1 = new Player1(this, 100, 550);
   }
 
   update() {
@@ -139,34 +140,61 @@ export default class PlayScene extends Phaser.Scene {
     const direction = (Math.floor(currentCell.number / 10) % 2 === 0) ? 1 : -1;
     const distance = direction * (nextCell.x - currentCell.x);
 
-    // Tạo tween để di chuyển player đến ô tiếp theo
     var tween = this.tweens.add({
       targets: this.player1,
       x: nextCell.x,
       y: nextCell.y,
       duration: 500,
       ease: "Power1",
+      onStart: () => {
+        this.player1.play("p1_move", true);
+        this.player1.flipX = (direction === -1);
+        gameSettings.currentP1Cell = nextCell;
+        console.log("play");
+      },
+      onComplete: () => {
+        this.player1.play("p1_idle");
+        console.log("currentP1Cell", gameSettings.currentP1Cell.ladder);
+        if (gameSettings.currentP1Cell.number === 100) {
+          console.log("win");
+        }
+        if (Object.keys(gameSettings.currentP1Cell.ladder).length !== 0) {
+          console.log("ladder", gameSettings.currentP1Cell.ladder);
+          this.movePlayerOnLadder()
+        }
+      }
     });
+  }
 
-    // Thay đổi trạng thái player khi tween bắt đầu
-    tween.on("start", () => {
-      this.player1.play("move", true);
-      this.player1.flipX = (direction === -1);
-      console.log("play");
-    });
+  movePlayerOnLadder() {
+    const currentCell = gameSettings.currentP1Cell;
+    const nextCell = gameSettings.cells[currentCell.number + 1];
+    const direction = (Math.floor(currentCell.number / 10) % 2 === 0) ? 1 : -1;
+    const ladder = currentCell.ladder
 
-    tween.on("complete", () => {
-      console.log("complete");
-      this.player1.play("idle");
-      gameSettings.currentP1Cell = nextCell;
+    console.log("moveOnLadder");
 
-      if (gameSettings.currentP1Cell.number === 100) {
-        console.log("win");
+    var tween = this.tweens.add({
+      targets: this.player1,
+      x: this.player1.x + ladder.xIncrement,
+      y: this.player1.y + ladder.yIncrement,
+      duration: 500,
+      ease: "Power1",
+      onStart: () => {
+        this.player1.play("p1_move", true);
+        this.player1.flipX = (direction === -1);
+        gameSettings.currentP1Cell = nextCell;
+        console.log("play");
+      },
+      onComplete: () => {
+        this.player1.play("p1_idle");
+        console.log("currentP1Cell", gameSettings.currentP1Cell);
+        if (gameSettings.currentP1Cell.number === 100) {
+          console.log("win");
+        }
       }
     });
 
-    // Bắt đầu tween
-    tween.play();
   }
 
   loopMove(steps) {
@@ -256,9 +284,11 @@ export default class PlayScene extends Phaser.Scene {
         if (valid) {
           ladderX = cell.x;
           ladderY = cell.y;
-          cell.ladder = { x: ladderX, y: ladderY, toX: topX, toY: topY };
+          console.log(ladder);
+          cell.ladder = { x: ladderX, y: ladderY, toX: topX, toY: topY, xIncreasement: ladder.angle.xIncrement, yIncreasement: ladder.angle.yIncrement };
           validPosition = true;
           cell.used = true;
+          console.log("cell", cell);
 
           if (i < 2) {
             var newLadder = new Ladder(this, i + 1, cell.x - 25, cell.y + 20);
@@ -350,10 +380,9 @@ export default class PlayScene extends Phaser.Scene {
   }
 
   handleClickBtnDice() {
-    var value = Phaser.Math.Between(1, 6);
-    console.log("a",this.diceBtn.frame);
+    // var value = Phaser.Math.Between(1, 6);
+    var value = 1
     this.diceBtn.setFrame(1);
-    console.log("b",this.diceBtn.frame);
     this.dice = new Dice(this, 800, 350, value);
     this.dice.launchDice(value);
     this.loopMove(value);

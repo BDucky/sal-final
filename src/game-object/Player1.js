@@ -32,7 +32,7 @@ export default class Player1 extends Phaser.Physics.Arcade.Sprite {
     }
 
     moveRight() {
-        this.play("p2_move", true);
+        this.play("p1_move", true);
         // this.setVelocityX(velocity);
         this.flipX = true;
     }

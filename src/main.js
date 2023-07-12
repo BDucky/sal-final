@@ -1,6 +1,7 @@
 import Phaser from 'phaser'
 
 import PlayScene from './scenes/PlayScene'
+import Keyboard from './scenes/Keyboard'
 
 const config = {
 	type: Phaser.AUTO,
