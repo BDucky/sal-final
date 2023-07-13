@@ -31,13 +31,6 @@ export default class Keyboard extends Phaser.Scene {
   }
 
   create() {
-    this.client.joinOrCreate("lobby").then(room => {
-      room.send("findRoom", '<4-digit-code>');
-      // listen to patches coming from the server
-      room.onMessage("roomId", function (roomId) {
-        this.client.joinById(roomId, this.roomId)
-      });
-    });
 
     this.keyboards = [];
     this.roomId = "";
@@ -52,6 +45,39 @@ export default class Keyboard extends Phaser.Scene {
     this.createRoomLabel();
 
     this.handleOnEvent();
+  }
+
+  findRoom(roomId) {
+    this.client.joinOrCreate("lobby").then(room => {
+      room.send("findRoom", `${roomId}`);
+      console.log("joined successfully");
+      // listen to patches coming from the server
+      room.onMessage("roomId", (roomCode) => {
+        this.client.joinById(roomCode).then((newRoom) => {
+          newRoom.onStateChange.once((state) => {
+            if (state.board) {
+              console.log("board", state.board);
+              this.board = state.board
+                .toArray()
+                .map((item) => ({
+                  direction: item.direction,
+                  id: item.id,
+                  incX: item.incX,
+                  incY: item.incY,
+                  objectId: item.objectId,
+                  targetCell: item.targetCell,
+                  type: item.type,
+                  x: item.x,
+                  y: item.y
+                }))
+            }
+          });
+          setTimeout(() => {
+            this.scene.start("play-scene", [this.board, newRoom])
+          }, 2000);
+        })
+      });
+    });
   }
 
   handleOnEvent() {
@@ -82,7 +108,7 @@ export default class Keyboard extends Phaser.Scene {
   }
 
   handleSubmit() {
-    console.log(this.roomId);
+    this.findRoom(this.roomId);
   }
 
   setRoomId(value) {

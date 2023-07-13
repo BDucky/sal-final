@@ -18,6 +18,8 @@ export default class Waiting extends Phaser.Scene {
         this.load.image("bg_game0", "assets/images/bg_game0.jpg");
         this.load.image("bg_help", "assets//images/bg_help.png");
         this.load.image("exit", "assets/images/but_no.png");
+
+        this.load.addFile(new WebFontFile(this.load, "Permanent Marker"));
     }
 
     create() {
@@ -25,7 +27,13 @@ export default class Waiting extends Phaser.Scene {
             room.onStateChange.once((state) => {
                 if (state.code) {
                     //TODO: Show code lên màn hình
-                    this.data = state.board
+                    console.log(state.board);
+                    console.log(room);
+                    this.statecode = state.code
+                }
+                if (state.board) {
+                    console.log("board", state.board);
+                    this.board = state.board
                         .toArray()
                         .map((item) => ({
                             direction: item.direction,
@@ -38,11 +46,14 @@ export default class Waiting extends Phaser.Scene {
                             x: item.x,
                             y: item.y
                         }))
-                        console.log(state.board);
-                    console.log(this.data);
-                    this.statecode = state.code
                 }
             });
+            room.onMessage('newGame', () => {
+                this.scene.start("play-scene", [this.board, room])
+            })
+            room.send("roll", () => {
+                console.log("roll");
+            })
         });
 
 
@@ -50,7 +61,9 @@ export default class Waiting extends Phaser.Scene {
         this.add.rectangle(width / 2, height / 2, width, height, 0x000000, 0.6);
         this.msgBox = this.add.image(width / 2, height / 2, "bg_help");
         this.createHeader();
-        this.createRoomLabel();
+        setTimeout(() => {
+            this.createRoomLabel();
+        }, 500);
     }
 
     createRoomLabel() {
