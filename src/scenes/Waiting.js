@@ -23,7 +23,7 @@ export default class Waiting extends Phaser.Scene {
     }
 
     create() {
-        this.client.create("snake_and_ladder").then((room) => {
+        this.client.create("snake_and_ladder", { extraDice: false, upperBounce: false }).then((room) => {
             room.onStateChange.once((state) => {
                 if (state.code) {
                     //TODO: Show code lên màn hình
@@ -49,7 +49,9 @@ export default class Waiting extends Phaser.Scene {
                 }
             });
             room.onMessage('newGame', () => {
-                this.scene.start("play-scene", [this.board, room])
+                setTimeout(() => {
+                    this.scene.start("play-scene", [this.board, room])
+                }, 2000);
             })
             room.send("roll", () => {
                 console.log("roll");

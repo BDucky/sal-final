@@ -4,6 +4,7 @@ import PlayScene from "./scenes/PlayScene";
 import Keyboard from "./scenes/Keyboard";
 import StartGame from "./scenes/StartGame";
 import Waiting from "./scenes/Waiting";
+import GameOver from "./scenes/GameOver";
 
 const config = {
   type: Phaser.AUTO,
@@ -16,7 +17,7 @@ const config = {
       // gravity: { y: 200 },
     },
   },
-  scene: [StartGame, Waiting, Keyboard, PlayScene],
+  scene: [StartGame, Waiting, Keyboard, PlayScene, GameOver],
 };
 
 export default new Phaser.Game(config);

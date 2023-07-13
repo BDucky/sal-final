@@ -118,13 +118,13 @@ export default class PlayScene extends Phaser.Scene {
       var checkCell = this.boardData[i];
       if (checkCell.type === "ladder") {
         var id = checkCell.objectId;
-        var cell = checkCell.id - 1;
+        var cell = checkCell.id;
         randomLadders.push({ id: id, cell: cell });
         console.log("randomLadders", randomLadders);
       }
       if (checkCell.type === "snake") {
         var id = checkCell.objectId;
-        var cell = checkCell.id - 1;
+        var cell = checkCell.id;
         randomSnakes.push({ id: id, cell: cell });
         console.log("randomSnakes", randomSnakes);
       }
@@ -172,13 +172,16 @@ export default class PlayScene extends Phaser.Scene {
       }, 2500);
     })
 
-    this.room.onStateChange((state) => {
-      console.log("turn", state.turn);
-      this.turn = state.turn
-    })
-  }
 
-  update() { }
+  }
+  update() {
+    if (gameSettings.currentP1Cell.number === 100) {
+      console.log("win");
+      this.scene.start("game-over", { winner: "player 1" });
+    } else if (gameSettings.currentP2Cell.number == 100) {
+      this.scene.start("game-over", { winner: "player 2" });
+    }
+  }
 
   movePlayer1(value) {
     var currentCell = gameSettings.currentP1Cell;
@@ -301,18 +304,18 @@ export default class PlayScene extends Phaser.Scene {
     console.log("moveOnLadder", currentCell);
 
     var tween = this.tweens.add({
-      targets: this.player1,
+      targets: this.player2,
       x: currentCell.ladder.toX,
       y: currentCell.ladder.toY,
       duration: 500,
       ease: "Power1",
       onStart: () => {
-        this.player1.play("p1_move", true);
-        this.player1.flipX = direction === -1;
+        this.player2.play("p1_move", true);
+        this.player2.flipX = direction === -1;
         console.log("play");
       },
       onComplete: () => {
-        this.player1.play("p1_idle");
+        this.player2.play("p1_idle");
         for (let i = 0; i < gameSettings.cells.length; i++) {
           let tempCell = gameSettings.cells[i];
           if (
@@ -357,7 +360,7 @@ export default class PlayScene extends Phaser.Scene {
   }
 
   player2MeetSnake(id) {
-    this.player1.destroy();
+    this.player2.destroy();
     console.log(gameSettings.currentP2Cell);
     if (id === 1) {
       this.newSnake_1.play(`snake_${id}_eat`, true);
@@ -380,7 +383,7 @@ export default class PlayScene extends Phaser.Scene {
           tempCell.y == gameSettings.currentP2Cell.snake.toY
         ) {
           gameSettings.currentP2Cell = tempCell;
-          this.player1 = new Player1(this, tempCell.x, tempCell.y);
+          this.player2 = new Player2(this, tempCell.x, tempCell.y);
         }
       }
     }, 1700);
@@ -412,7 +415,7 @@ export default class PlayScene extends Phaser.Scene {
     } else if (id == 3) {
       var newLadder = new Ladder(this, id, cell.x - 10, cell.y + 15);
     } else if (id == 4) {
-      var newLadder = new Ladder(this, id, cell.x - 25, cell.y + 10);
+      var newLadder = new Ladder(this, id, cell.x - 15, cell.y + 25);
     } else if (id == 5) {
       var newLadder = new Ladder(this, id, cell.x - 25, cell.y + 10);
     } else if (id == 6) {
