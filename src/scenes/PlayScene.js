@@ -138,8 +138,8 @@ export default class PlayScene extends Phaser.Scene {
       let snake = randomSnakes[i];
       this.addSnakes(snake.cell, snake.id);
     }
-    this.player2 = new Player2(this, 100, 525);
-    this.player1 = new Player1(this, 100, 550);
+    this.player2 = new Player2(this, 185, 550);
+    this.player1 = new Player1(this, 185, 550);
 
 
 
@@ -155,6 +155,7 @@ export default class PlayScene extends Phaser.Scene {
       if (PLAYER_ID === 1 && time % 2 === 0) {
         this.movePlayer1(this.value);
         time += 1
+        console.log("gameSettings.currentP1Cell", gameSettings.currentP1Cell);
       } else if (PLAYER_ID === 2 && time % 2 !== 0) {
         this.movePlayer2(this.value);
         time += 1
@@ -172,22 +173,25 @@ export default class PlayScene extends Phaser.Scene {
       }, 2500);
     })
 
+    this.room.onMessage("gameOver", (winner) => {
+      console.log("gameOver", winner);
+      this.scene.start("game-over", winner);
+    })
 
   }
   update() {
-    if (gameSettings.currentP1Cell.number === 100) {
-      console.log("win");
-      this.scene.start("game-over", { winner: "player 1" });
-    } else if (gameSettings.currentP2Cell.number == 100) {
-      this.scene.start("game-over", { winner: "player 2" });
-    }
+    // if (gameSettings.currentP1Cell.number === 100) {
+    //   console.log("win");
+    //   this.scene.start("game-over", { winner: "player 1" });
+    // } else if (gameSettings.currentP2Cell.number == 100) {
+    //   this.scene.start("game-over", { winner: "player 2" });
+    // }
   }
 
   movePlayer1(value) {
     var currentCell = gameSettings.currentP1Cell;
     var nextCell = gameSettings.cells[currentCell.number + 1];
     var direction = Math.floor(currentCell.number / 10) % 2 === 0 ? 1 : -1;
-    var distance = direction * (nextCell.x - currentCell.x);
     var steps = value;
 
     var tween = this.tweens.add({
@@ -214,7 +218,7 @@ export default class PlayScene extends Phaser.Scene {
           if (nextCell.snake.x != null) {
             console.log("meetSnake",);
             setTimeout(() => {
-              this.player1MeetSnake(nextCell.snake.number);
+              this.player1MeetSnake(nextCell.snake);
             }, 200);
           }
         }
@@ -253,7 +257,7 @@ export default class PlayScene extends Phaser.Scene {
           if (nextCell.snake.x != null) {
             console.log("meetSnake",);
             setTimeout(() => {
-              this.player2MeetSnake(nextCell.snake.number);
+              this.player2MeetSnake(nextCell.snake);
             }, 200);
           }
         }
@@ -329,21 +333,23 @@ export default class PlayScene extends Phaser.Scene {
     });
   }
 
-  player1MeetSnake(id) {
+  player1MeetSnake(snake) {
+    let id = snake.number
+    console.log("toX", snake.toX, "toY", snake.toY);
     this.player1.destroy();
     console.log(gameSettings.currentP1Cell);
     if (id === 1) {
-      this.newSnake_1.play(`snake_${id}_eat`, true);
+      snake.play(`snake_${id}_eat`, true);
     } else if (id === 2) {
-      this.newSnake_2.play(`snake_${id}_eat`, true);
+      snake.play(`snake_${id}_eat`, true);
     } else if (id === 3) {
-      this.newSnake_3.play(`snake_${id}_eat`, true);
+      snake.play(`snake_${id}_eat`, true);
     } else if (id === 4) {
-      this.newSnake_4.play(`snake_${id}_eat`, true);
+      snake.play(`snake_${id}_eat`, true);
     } else if (id === 5) {
-      this.newSnake_5.play(`snake_${id}_eat`, true);
+      snake.play(`snake_${id}_eat`, true);
     } else if (id === 6) {
-      this.newSnake_6.play(`snake_${id}_eat`, true);
+      snake.play(`snake_${id}_eat`, true);
     }
     setTimeout(() => {
       for (let i = 0; i < gameSettings.cells.length; i++) {
@@ -359,21 +365,21 @@ export default class PlayScene extends Phaser.Scene {
     }, 1700);
   }
 
-  player2MeetSnake(id) {
+  player2MeetSnake(snake) {
+    var id = snake.number
     this.player2.destroy();
-    console.log(gameSettings.currentP2Cell);
     if (id === 1) {
-      this.newSnake_1.play(`snake_${id}_eat`, true);
+      snake.play(`snake_${id}_eat`, true);
     } else if (id === 2) {
-      this.newSnake_2.play(`snake_${id}_eat`, true);
+      snake.play(`snake_${id}_eat`, true);
     } else if (id === 3) {
-      this.newSnake_3.play(`snake_${id}_eat`, true);
+      snake.play(`snake_${id}_eat`, true);
     } else if (id === 4) {
-      this.newSnake_4.play(`snake_${id}_eat`, true);
+      snake.play(`snake_${id}_eat`, true);
     } else if (id === 5) {
-      this.newSnake_5.play(`snake_${id}_eat`, true);
+      snake.play(`snake_${id}_eat`, true);
     } else if (id === 6) {
-      this.newSnake_6.play(`snake_${id}_eat`, true);
+      snake.play(`snake_${id}_eat`, true);
     }
     setTimeout(() => {
       for (let i = 0; i < gameSettings.cells.length; i++) {
@@ -430,51 +436,23 @@ export default class PlayScene extends Phaser.Scene {
     var cell = gameSettings.cells[cellIndex]
     var snake = gameSettings.snakesDirections[id - 1];
 
-    if (id === 1) {
-      var toX = cell.x + cellSize;
-      var toY = cell.y + snake.incY * cellSize;
-    } else if (id === 2) {
-      var toX = cell.x + snake.incX * cellSize;
-      var toY = cell.y + snake.incY * cellSize;
-    } else if (id === 3) {
-      var toX = cell.x + snake.incX * cellSize;
-      var toY = cell.y + snake.incY * cellSize;
-    } else if (id === 4) {
-      var toX = cell.x + snake.incX * cellSize;
-      var toY = cell.y + snake.incY * cellSize;
-    } else if (id === 5) {
-      var toX = cell.x;
-      var toY = cell.y + snake.incY * cellSize;
-    } else if (id === 6) {
-      var toX = cell.x + snake.incX * cellSize;
-      var toY = cell.y + snake.incY * cellSize;
-    }
-
-    cell.snake = {
-      x: cell.x,
-      y: cell.y,
-      toX: toX,
-      toY: toY,
-      number: id,
-    };
-
     if (id == 1) {
-      this.newSnake_1 = new Snake(this, id, cell.x - 75, cell.y);
+      cell.snake = new Snake(this, id, cell.x - 75, cell.y);
     } else if (id == 2) {
-      this.newSnake_2 = new Snake(this, id, cell.x - 75, cell.y);
+      cell.snake = new Snake(this, id, cell.x - 75, cell.y);
     } else if (id == 3) {
-      this.newSnake_3 = new Snake(this, id, cell.x - 10, cell.y);
+      cell.snake = new Snake(this, id, cell.x - 10, cell.y);
     } else if (id == 4) {
-      this.newSnake_4 = new Snake(
+      cell.snake = new Snake(
         this,
         id,
         cell.x - 10,
         cell.y - 30
       );
     } else if (id == 5) {
-      this.newSnake_5 = new Snake(this, id, cell.x - 10, cell.y);
+      cell.snake = new Snake(this, id, cell.x - 10, cell.y);
     } else {
-      this.newSnake_6 = new Snake(this, id, cell.x, cell.y);
+      cell.snake = new Snake(this, id, cell.x, cell.y);
     }
   }
 

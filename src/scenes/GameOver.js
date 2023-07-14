@@ -39,9 +39,9 @@ export default class GameOver extends Phaser.Scene {
             cursor: "pointer",
         });
 
-        restart.on('pointerdown', function () {
-            this.scene.start('host-game')
-        }, this);
+        // restart.on('pointerdown', function () {
+        //     this.scene.start('host-game')
+        // }, this);
 
         home.on('pointerdown', function () {
             this.scene.start('start-game')
@@ -69,7 +69,7 @@ export default class GameOver extends Phaser.Scene {
             .text(
                 this.msgBox.x - this.msgBox.width / 2 + 50,
                 this.msgBox.y - this.msgBox.height / 2 + 50,
-                `${this.winner.winner} win!`,
+                `player ${this.winner.winner} win!`,
                 {
                     fontFamily: "Permanent Marker",
                     fontSize: "30px",

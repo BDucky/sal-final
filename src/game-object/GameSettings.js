@@ -1,8 +1,8 @@
 export var gameSettings = {
   playerSpeed: 200,
   squareSize: 100,
-  currentP1Cell: { x: 0, y: 9, number: 0 },
-  currentP2Cell: { x: 0, y: 9, number: 0 },
+  currentP1Cell: { x: 1, y: 9, number: 1 },
+  currentP2Cell: { x: 1, y: 9, number: 1 },
   laddersDirections: [
     { id: 1, width: 3, height: 4, incX: 2, incY: 3, angle: { xIncrement: 0.5547001962252291, yIncrement: -0.8320502943378437 } },
     { id: 2, width: 2, height: 4, incX: 1, incY: 3, angle: { xIncrement: 0.31622776601683794, yIncrement: -0.9486832980505138 } },
